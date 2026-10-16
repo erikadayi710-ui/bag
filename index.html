@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Auly Regalos & Bolsos</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            pink: '#e60067',
+                            hover: '#c40057',
+                            light: '#fff0f5',
+                            border: '#fbcfe8',
+                            dark: '#1e1b1d'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 antialiased selection:bg-pink-200" x-data="aulyApp()">
+
+    <!-- Header Selector de Vista Web vs Marco Móvil -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 text-xs py-2 px-3 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-2">
+                <span class="bg-gradient-to-r from-[#e60067] to-[#ec4899] text-white px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider">
+                    Auly Web & Mobile App
+                </span>
+                <span class="hidden sm:inline text-slate-300">Modo Híbrido Web y Móvil</span>
+            </div>
+
+            <!-- Switcher Modo Móvil / Web -->
+            <div class="flex items-center bg-slate-800 p-1 rounded-lg border border-slate-700 space-x-1">
+                <button @click="viewMode = 'phone'" :class="viewMode === 'phone' ? 'bg-[#e60067] text-white' : 'text-slate-400 hover:text-white'" class="px-2.5 py-1 rounded-md font-semibold transition-all flex items-center space-x-1">
+                    📱 <span>Marco Móvil</span>
+                </button>
+                <button @click="viewMode = 'full'" :class="viewMode === 'full' ? 'bg-[#e60067] text-white' : 'text-slate-400 hover:text-white'" class="px-2.5 py-1 rounded-md font-semibold transition-all flex items-center space-x-1">
+                    💻 <span>Pantalla Completa Web</span>
+                </button>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button @click="isCustomizerOpen = true" class="hidden md:flex bg-pink-950 text-pink-300 border border-pink-700/50 hover:bg-pink-900 px-2.5 py-1 rounded-md font-medium">
+                    ✨ Diseñar Regalo
+                </button>
+                <button @click="isCartOpen = true" class="relative bg-[#e60067] text-white hover:bg-[#c40057] px-3 py-1 rounded-md font-semibold flex items-center space-x-1.5">
+                    <span>🛒 Carrito (<span x-text="cartCount"></span>)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container Dynamically Styled for Phone Frame or Web Fullscreen -->
+    <div :class="viewMode === 'phone' ? 'min-h-screen bg-pink-100/50 py-2 sm:py-6 px-0 sm:px-2 flex items-center justify-center' : 'min-h-screen bg-slate-50 py-0 px-0'">
+        <div :class="viewMode === 'phone' ? 'w-full max-w-[430px] bg-white rounded-none sm:rounded-[44px] shadow-2xl border-0 sm:border-[8px] sm:border-slate-900 overflow-hidden flex flex-col min-h-screen sm:min-h-[860px] relative' : 'w-full max-w-5xl mx-auto bg-white min-h-screen flex flex-col shadow-lg'">
+            
+            <!-- Phone Top Notch Status Bar (Solo en modo teléfono) -->
+            <div x-show="viewMode === 'phone'" class="bg-white/95 backdrop-blur-md px-6 pt-3 pb-1 flex items-center justify-between text-xs font-bold text-slate-900 select-none z-40 border-b border-pink-50">
+                <span>9:41</span>
+                <div class="w-20 h-4 bg-slate-900 rounded-full flex items-center justify-center space-x-1">
+                    <div class="w-2 h-2 rounded-full bg-slate-800"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-[#e60067] opacity-60"></div>
+                </div>
+                <div class="flex items-center space-x-1 text-slate-800">
+                    <span>📶 🔋</span>
+                </div>
+            </div>
+
+            <!-- Navbar -->
+            <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-pink-100 px-4 py-3 flex items-center justify-between">
+                <button @click="isDrawerOpen = true" class="p-2 rounded-full text-slate-700 hover:text-[#e60067] hover:bg-pink-50 transition-colors">
+                    ☰
+                </button>
+                <button @click="activeTab = 'inicio'; window.scrollTo({top:0, behavior:'smooth'})" class="flex flex-col items-center">
+                    <span class="font-serif text-2xl font-bold bg-gradient-to-r from-[#e60067] via-[#ec4899] to-[#be185d] bg-clip-text text-transparent italic">Auly</span>
+                    <span class="text-[8px] tracking-[0.25em] text-[#be185d] uppercase font-semibold -mt-1">Regalos & Bolsos</span>
+                </button>
+                <div class="flex items-center space-x-1">
+                    <button @click="isSearchOpen = !isSearchOpen" class="p-2 rounded-full text-slate-700 hover:text-[#e60067]">🔍</button>
+                    <button @click="isCartOpen = true" class="relative p-2 rounded-full text-slate-700 hover:text-[#e60067]">
+                        🛍️
+                        <span x-show="cartCount > 0" class="absolute top-1 right-1 bg-[#e60067] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center" x-text="cartCount"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Search Bar -->
+            <div x-show="isSearchOpen" class="p-3 bg-pink-50 border-b border-pink-100 flex gap-2">
+                <input type="text" x-model="searchQuery" @input="activeTab = 'categorias'" placeholder="Buscar rosas eternas, bolsos..." class="w-full px-3 py-2 text-xs bg-white border border-pink-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#e60067]">
+                <button @click="isSearchOpen = false" class="text-xs font-bold text-[#e60067]">Cerrar</button>
+            </div>
+
+            <!-- Content Area -->
+            <main class="flex-1 pb-16 overflow-y-auto no-scrollbar">
+                
+                <!-- TAB: INICIO -->
+                <div x-show="activeTab === 'inicio'" class="space-y-5">
+                    <!-- Hero Banner -->
+                    <div class="relative overflow-hidden rounded-3xl my-3 mx-4 shadow-md bg-slate-900 h-[220px]">
+                        <img src="https://images.pexels.com/photos/7431423/pexels-photo-7431423.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940" alt="Banner Auly" class="w-full h-full object-cover opacity-80">
+                        <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent flex flex-col justify-center p-6 space-y-2">
+                            <span class="bg-pink-500/30 text-pink-200 border border-pink-400/30 px-2.5 py-0.5 rounded-full text-[10px] font-semibold w-max uppercase">✨ Colección Auly 2026</span>
+                            <h1 class="text-2xl font-extrabold text-white font-serif leading-tight">Porque cada detalle es especial</h1>
+                            <p class="text-xs text-pink-100">Flores eternas que duran años y bolsos exclusivos.</p>
+                            <button @click="activeTab = 'categorias'" class="mt-2 bg-[#e60067] text-white px-4 py-2 rounded-full text-xs font-bold w-max shadow-md">Ver productos →</button>
+                        </div>
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="px-4 grid grid-cols-4 gap-2">
+                        <template x-for="cat in categories">
+                            <button @click="selectedCategory = cat.slug; activeTab = 'categorias'" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-pink-50/80 hover:bg-pink-100 border border-pink-100 transition-all">
+                                <span class="text-2xl mb-1" x-text="cat.icon"></span>
+                                <span class="text-[11px] font-bold text-slate-800 text-center" x-text="cat.name"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- Featured Grid -->
+                    <div class="px-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-base font-bold text-slate-900">Productos destacados</h2>
+                            <button @click="selectedCategory = 'all'; activeTab = 'categorias'" class="text-xs font-bold text-[#e60067]">Ver todos →</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <template x-for="product in products.filter(p => p.featured)">
+                                <div class="bg-white rounded-2xl overflow-hidden border border-pink-100 shadow-sm flex flex-col justify-between p-3 relative">
+                                    <div @click="openProductModal(product)" class="aspect-square bg-pink-50 rounded-xl overflow-hidden mb-2 cursor-pointer relative">
+                                        <img :src="product.image" :alt="product.name" class="w-full h-full object-cover">
+                                        <button @click.stop="toggleFavorite(product.id)" class="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 shadow-xs">
+                                            <span x-text="favorites.includes(product.id) ? '❤️' : '🤍'"></span>
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center space-x-1 text-[10px] text-amber-500 font-bold mb-0.5">
+                                            <span>★</span><span x-text="product.rating"></span>
+                                        </div>
+                                        <h3 @click="openProductModal(product)" class="text-xs font-semibold text-slate-800 line-clamp-2 cursor-pointer hover:text-[#e60067]" x-text="product.name"></h3>
+                                    </div>
+                                    <div class="mt-2 pt-2 border-t border-pink-50 flex items-center justify-between">
+                                        <span class="text-xs font-black text-slate-900" x-text="formatPrice(product.price)"></span>
+                                        <button @click="addToCart(product)" class="w-8 h-8 rounded-full bg-[#83003a] text-white flex items-center justify-center text-sm font-bold hover:bg-[#e60067]">+</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Customizer Banner -->
+                    <div class="mx-4 p-5 rounded-3xl bg-gradient-to-r from-slate-900 via-pink-950 to-slate-900 text-white space-y-2 shadow-lg">
+                        <span class="bg-[#e60067] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">✨ Especial Auly</span>
+                        <h3 class="text-base font-serif font-extrabold">¿Quieres diseñar un regalo a tu medida?</h3>
+                        <p class="text-xs text-pink-200">Combina rosas eternas, lazo satinado, chocolates y dedicatoria personalizada.</p>
+                        <button @click="isCustomizerOpen = true" class="bg-white text-[#e60067] px-4 py-2 rounded-full text-xs font-bold shadow-md">Diseñar mi paquete →</button>
+                    </div>
+                </div>
+
+                <!-- TAB: CATEGORÍAS -->
+                <div x-show="activeTab === 'categorias'" class="px-4 py-4 space-y-4">
+                    <div>
+                        <h1 class="text-lg font-bold font-serif text-slate-900">Catálogo Auly Regalos & Bolsos</h1>
+                        <p class="text-xs text-slate-500">Encuentra el regalo ideal o bolso exclusivo</p>
+                    </div>
+                    <div class="flex space-x-2 overflow-x-auto pb-1 no-scrollbar">
+                        <button @click="selectedCategory = 'all'" :class="selectedCategory === 'all' ? 'bg-[#e60067] text-white' : 'bg-pink-50 text-slate-700'" class="px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0">Todos</button>
+                        <template x-for="cat in categories">
+                            <button @click="selectedCategory = cat.slug" :class="selectedCategory === cat.slug ? 'bg-[#e60067] text-white' : 'bg-pink-50 text-slate-700'" class="px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0" x-text="cat.name"></button>
+                        </template>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <template x-for="product in filteredProducts">
+                            <div class="bg-white rounded-2xl overflow-hidden border border-pink-100 shadow-sm flex flex-col justify-between p-3 relative">
+                                <div @click="openProductModal(product)" class="aspect-square bg-pink-50 rounded-xl overflow-hidden mb-2 cursor-pointer relative">
+                                    <img :src="product.image" :alt="product.name" class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <h3 @click="openProductModal(product)" class="text-xs font-semibold text-slate-800 line-clamp-2 cursor-pointer hover:text-[#e60067]" x-text="product.name"></h3>
+                                </div>
+                                <div class="mt-2 pt-2 border-t border-pink-50 flex items-center justify-between">
+                                    <span class="text-xs font-black text-slate-900" x-text="formatPrice(product.price)"></span>
+                                    <button @click="addToCart(product)" class="w-8 h-8 rounded-full bg-[#83003a] text-white flex items-center justify-center text-sm font-bold hover:bg-[#e60067]">+</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- TAB: FAVORITOS -->
+                <div x-show="activeTab === 'favoritos'" class="px-4 py-4 space-y-4">
+                    <h1 class="text-lg font-bold font-serif text-slate-900">Tus Regalos Favoritos</h1>
+                    <template x-if="favoriteProducts.length === 0">
+                        <div class="text-center py-12 space-y-3 bg-pink-50/50 rounded-3xl p-6 border border-pink-100">
+                            <p class="text-xs text-slate-600 font-semibold">Aún no has guardado favoritos.</p>
+                            <button @click="activeTab = 'inicio'" class="bg-[#e60067] text-white text-xs font-bold px-4 py-2 rounded-full">Explorar Productos</button>
+                        </div>
+                    </template>
+                    <div class="grid grid-cols-2 gap-3">
+                        <template x-for="product in favoriteProducts">
+                            <div class="bg-white rounded-2xl overflow-hidden border border-pink-100 shadow-sm flex flex-col justify-between p-3">
+                                <div class="aspect-square bg-pink-50 rounded-xl overflow-hidden mb-2">
+                                    <img :src="product.image" class="w-full h-full object-cover">
+                                </div>
+                                <h3 class="text-xs font-semibold text-slate-800 line-clamp-2" x-text="product.name"></h3>
+                                <div class="mt-2 pt-2 border-t border-pink-50 flex items-center justify-between">
+                                    <span class="text-xs font-black text-slate-900" x-text="formatPrice(product.price)"></span>
+                                    <button @click="addToCart(product)" class="w-8 h-8 rounded-full bg-[#83003a] text-white flex items-center justify-center">+</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- TAB: PERFIL -->
+                <div x-show="activeTab === 'perfil'" class="px-4 py-4 space-y-4">
+                    <div class="bg-gradient-to-r from-slate-900 via-pink-950 to-slate-900 text-white p-5 rounded-3xl shadow-xl space-y-2">
+                        <h2 class="text-base font-bold">Cliente VIP Auly ✨</h2>
+                        <p class="text-xs text-pink-200">auly.cliente@regalos.com</p>
+                        <div class="pt-2 border-t border-white/10 flex justify-between text-xs">
+                            <span>Puntos: <strong class="text-amber-300">250 Puntos</strong></span>
+                            <span class="bg-pink-500/30 px-2 py-0.5 rounded-full border border-pink-400/30">Gold Member</span>
+                        </div>
+                    </div>
+                    <div class="bg-pink-50/80 p-4 rounded-3xl border border-pink-100 space-y-2">
+                        <h3 class="text-xs font-bold text-slate-800">📦 Mis Pedidos Recientes</h3>
+                        <template x-for="ord in orders">
+                            <div class="bg-white p-3 rounded-2xl border border-pink-200 text-xs space-y-1">
+                                <div class="flex justify-between font-bold text-[#e60067]">
+                                    <span x-text="ord.orderNumber"></span>
+                                    <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full" x-text="ord.status"></span>
+                                </div>
+                                <div class="text-slate-600">Total: <strong x-text="formatPrice(ord.total)"></strong></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="sticky bottom-0 z-30 bg-white/95 backdrop-blur-md border-t border-pink-100 py-1.5 px-3">
+                <div class="grid grid-cols-4 items-center">
+                    <button @click="activeTab = 'inicio'" :class="activeTab === 'inicio' ? 'text-[#e60067] font-bold' : 'text-slate-400'" class="flex flex-col items-center py-1">
+                        🏠 <span class="text-[10px]">Inicio</span>
+                    </button>
+                    <button @click="activeTab = 'categorias'" :class="activeTab === 'categorias' ? 'text-[#e60067] font-bold' : 'text-slate-400'" class="flex flex-col items-center py-1">
+                        📦 <span class="text-[10px]">Categorías</span>
+                    </button>
+                    <button @click="activeTab = 'favoritos'" :class="activeTab === 'favoritos' ? 'text-[#e60067] font-bold' : 'text-slate-400'" class="flex flex-col items-center py-1 relative">
+                        ❤️ <span class="text-[10px]">Favoritos</span>
+                        <span x-show="favorites.length > 0" class="absolute top-0 right-3 bg-[#e60067] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center" x-text="favorites.length"></span>
+                    </button>
+                    <button @click="activeTab = 'perfil'" :class="activeTab === 'perfil' ? 'text-[#e60067] font-bold' : 'text-slate-400'" class="flex flex-col items-center py-1">
+                        👤 <span class="text-[10px]">Perfil</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- CART DRAWER -->
+            <div x-show="isCartOpen" class="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs">
+                <div class="bg-white w-full max-w-md h-full shadow-2xl flex flex-col p-4 space-y-4">
+                    <div class="flex items-center justify-between border-b border-pink-100 pb-3">
+                        <h2 class="text-sm font-bold">🛒 Tu Carrito de Compras</h2>
+                        <button @click="isCartOpen = false" class="text-lg font-bold">✕</button>
+                    </div>
+                    <template x-if="cart.length === 0">
+                        <div class="text-center py-20 text-slate-500 text-xs">Tu carrito está vacío</div>
+                    </template>
+                    <div class="flex-1 space-y-3 overflow-y-auto">
+                        <template x-for="item in cart" :key="item.id">
+                            <div class="flex items-center justify-between bg-pink-50/50 p-2.5 rounded-2xl border border-pink-100 text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <img :src="item.image" class="w-12 h-12 rounded-xl object-cover">
+                                    <div>
+                                        <h4 class="font-bold text-slate-800" x-text="item.name"></h4>
+                                        <div class="text-[#e60067] font-extrabold" x-text="formatPrice(item.price * item.quantity)"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-1 bg-white rounded-lg px-2 py-1 border border-pink-200">
+                                    <button @click="updateQty(item.id, item.quantity - 1)" class="font-bold">-</button>
+                                    <span class="font-bold px-1" x-text="item.quantity"></span>
+                                    <button @click="updateQty(item.id, item.quantity + 1)" class="font-bold">+</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <template x-if="cart.length > 0">
+                        <div class="border-t border-pink-100 pt-3 space-y-2">
+                            <div class="flex justify-between text-sm font-extrabold">
+                                <span>Total:</span>
+                                <span class="text-[#e60067]" x-text="formatPrice(cartTotal)"></span>
+                            </div>
+                            <button @click="isCheckoutOpen = true; isCartOpen = false" class="w-full bg-[#e60067] text-white font-bold py-3 rounded-full text-xs shadow-md">Finalizar Compra Directa</button>
+                            <a :href="whatsappCheckoutUrl()" target="_blank" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-full text-xs flex items-center justify-center space-x-2">💬 Pedir por WhatsApp Instantáneo</a>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- CHECKOUT MODAL -->
+            <div x-show="isCheckoutOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                <div class="bg-white w-full max-w-md rounded-3xl p-5 space-y-4 shadow-2xl">
+                    <div class="flex justify-between items-center border-b border-pink-100 pb-2">
+                        <h3 class="text-sm font-bold">Finalizar Pedido Auly</h3>
+                        <button @click="isCheckoutOpen = false">✕</button>
+                    </div>
+                    <form @submit.prevent="submitOrder" class="space-y-3 text-xs">
+                        <div>
+                            <label class="font-semibold">Tu Nombre *</label>
+                            <input type="text" x-model="checkoutForm.name" required class="w-full p-2.5 rounded-xl border border-pink-200 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Teléfono / WhatsApp *</label>
+                            <input type="tel" x-model="checkoutForm.phone" required class="w-full p-2.5 rounded-xl border border-pink-200 mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold">Dirección de Entrega *</label>
+                            <input type="text" x-model="checkoutForm.address" required class="w-full p-2.5 rounded-xl border border-pink-200 mt-1">
+                        </div>
+                        <button type="submit" class="w-full bg-[#e60067] text-white font-bold py-3 rounded-full shadow-md">Confirmar Pedido</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- CUSTOMIZER MODAL -->
+            <div x-show="isCustomizerOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                <div class="bg-white w-full max-w-md rounded-3xl p-5 space-y-4 shadow-2xl">
+                    <div class="flex justify-between items-center border-b border-pink-100 pb-2">
+                        <h3 class="text-sm font-bold">✨ Diseña tu Regalo Auly</h3>
+                        <button @click="isCustomizerOpen = false">✕</button>
+                    </div>
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="font-bold block mb-1">Color de Rosas:</label>
+                            <select x-model="customChoice.roseColor" class="w-full p-2.5 rounded-xl border border-pink-200">
+                                <option>Rosa Fucsia Auly</option>
+                                <option>Rojo Pasión Romántico</option>
+                                <option>Blanco Nieve Elegante</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-bold block mb-1">Color del Lazo:</label>
+                            <select x-model="customChoice.ribbonColor" class="w-full p-2.5 rounded-xl border border-pink-200">
+                                <option>Lazo Fucsia Satinado</option>
+                                <option>Lazo Dorado Lujo</option>
+                                <option>Lazo Negro Chic</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-bold block mb-1">Mensaje para la Tarjeta:</label>
+                            <textarea x-model="customChoice.note" rows="2" placeholder="Escribe tu dedicatoria..." class="w-full p-2.5 rounded-xl border border-pink-200"></textarea>
+                        </div>
+                        <button @click="addCustomProductToCart" class="w-full bg-[#e60067] text-white font-bold py-3 rounded-full shadow-md">Añadir Regalo Personalizado al Carrito</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRODUCT DETAIL MODAL -->
+            <div x-show="selectedProduct" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60">
+                <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
+                    <template x-if="selectedProduct">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="bg-[#e60067] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase" x-text="selectedProduct.category"></span>
+                                <button @click="selectedProduct = null" class="text-lg font-bold">✕</button>
+                            </div>
+                            <img :src="selectedProduct.image" class="w-full aspect-square rounded-2xl object-cover mb-3">
+                            <h2 class="text-base font-extrabold font-serif" x-text="selectedProduct.name"></h2>
+                            <div class="text-lg font-black text-[#e60067] mt-1" x-text="formatPrice(selectedProduct.price)"></div>
+                            <p class="text-xs text-slate-600 mt-2" x-text="selectedProduct.desc"></p>
+                            <button @click="addToCart(selectedProduct); selectedProduct = null;" class="w-full mt-4 bg-[#e60067] text-white font-bold py-3 rounded-full text-xs shadow-md">Añadir al Carrito</button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Toast Notification -->
+            <div x-show="toast" x-transition class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-xl" x-text="toast"></div>
+
+        </div>
+    </div>
+
+    <script>
+        function aulyApp() {
+            return {
+                viewMode: 'phone',
+                activeTab: 'inicio',
+                selectedCategory: 'all',
+                searchQuery: '',
+                isCartOpen: false,
+                isCheckoutOpen: false,
+                isCustomizerOpen: false,
+                isDrawerOpen: false,
+                isSearchOpen: false,
+                toast: null,
+                selectedProduct: null,
+                cart: JSON.parse(localStorage.getItem('auly_html_cart') || '[]'),
+                favorites: JSON.parse(localStorage.getItem('auly_html_favs') || '[]'),
+                orders: JSON.parse(localStorage.getItem('auly_html_orders') || '[{"orderNumber":"AULY-948211","total":65000,"status":"En preparación"}]'),
+                
+                customChoice: { roseColor: 'Rosa Fucsia Auly', ribbonColor: 'Lazo Fucsia Satinado', note: '' },
+                checkoutForm: { name: '', phone: '', address: '' },
+
+                categories: [
+                    { slug: 'regalos', name: 'Regalos', icon: '🎁' },
+                    { slug: 'flores-eternas', name: 'Flores Eternas', icon: '🌹' },
+                    { slug: 'bolsos', name: 'Bolsos', icon: '👜' },
+                    { slug: 'personalizados', name: 'Personalizados', icon: '💖' }
+                ],
+
+                products: [
+                    { id: 1, slug: 'flores-eternas', name: 'Ramo de rosas eternas', category: 'flores-eternas', price: 65000, rating: '5.0', featured: true, image: 'https://images.pexels.com/photos/7431423/pexels-photo-7431423.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', desc: 'Exclusivo arreglo de rosas eternas preservadas de alta calidad en caja cilíndrica de lujo.' },
+                    { id: 2, slug: 'bolsos', name: 'Bolso tipo tote', category: 'bolsos', price: 48000, rating: '4.9', featured: true, image: 'https://images.pexels.com/photos/13924892/pexels-photo-13924892.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', desc: 'Bolso tote bag icónico de Auly elaborado en lona premium de alta densidad.' },
+                    { id: 3, slug: 'bolsos', name: 'Bolso Bandolera Fucsia Luxury', category: 'bolsos', price: 58000, rating: '5.0', featured: true, image: 'https://images.pexels.com/photos/13924894/pexels-photo-13924894.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', desc: 'Bolso de hombro bandolera acolchado en tono fucsia con correa dorada.' },
+                    { id: 4, slug: 'personalizados', name: 'Caja Sorpresa Personalizada', category: 'personalizados', price: 75000, rating: '4.9', featured: true, image: 'https://images.pexels.com/photos/38703041/pexels-photo-38703041.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', desc: 'Tarjeta acrílica con mensaje personalizado grabado a láser y mini rosa eterna.' },
+                    { id: 5, slug: 'flores-eternas', name: 'Cúpula Cristal Rosa Eterna Bella', category: 'flores-eternas', price: 55000, rating: '4.9', featured: false, image: 'https://images.pexels.com/photos/34790956/pexels-photo-34790956.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', desc: 'Rosa eterna roja sobre peana de madera rodeada de luces LED.' },
+                    { id: 6, slug: 'regalos', name: 'Combo Regalo Romántico VIP Auly', category: 'regalos', price: 110000, rating: '5.0', featured: true, image: 'https://images.pexels.com/photos/14867422/pexels-photo-14867422.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940', desc: 'Ramo de 12 rosas eternas + Bolso Tote + Chocolates finos.' }
+                ],
+
+                get filteredProducts() {
+                    let res = this.products;
+                    if (this.selectedCategory !== 'all') {
+                        res = res.filter(p => p.category === this.selectedCategory);
+                    }
+                    if (this.searchQuery.trim() !== '') {
+                        let q = this.searchQuery.toLowerCase();
+                        res = res.filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+                    }
+                    return res;
+                },
+
+                get favoriteProducts() {
+                    return this.products.filter(p => this.favorites.includes(p.id));
+                },
+
+                get cartCount() {
+                    return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+                },
+
+                get cartTotal() {
+                    return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                },
+
+                formatPrice(amount) {
+                    return '$ ' + new Intl.NumberFormat('es-CO').format(amount);
+                },
+
+                showToast(msg) {
+                    this.toast = msg;
+                    setTimeout(() => { this.toast = null; }, 2500);
+                },
+
+                addToCart(product) {
+                    let existing = this.cart.find(i => i.id === product.id);
+                    if (existing) {
+                        existing.quantity++;
+                    } else {
+                        this.cart.push({ ...product, quantity: 1 });
+                    }
+                    localStorage.setItem('auly_html_cart', JSON.stringify(this.cart));
+                    this.showToast(`"${product.name}" añadido al carrito!`);
+                },
+
+                updateQty(id, qty) {
+                    if (qty <= 0) {
+                        this.cart = this.cart.filter(i => i.id !== id);
+                    } else {
+                        let item = this.cart.find(i => i.id === id);
+                        if (item) item.quantity = qty;
+                    }
+                    localStorage.setItem('auly_html_cart', JSON.stringify(this.cart));
+                },
+
+                toggleFavorite(id) {
+                    if (this.favorites.includes(id)) {
+                        this.favorites = this.favorites.filter(f => f !== id);
+                        this.showToast('Eliminado de favoritos');
+                    } else {
+                        this.favorites.push(id);
+                        this.showToast('Añadido a favoritos ❤️');
+                    }
+                    localStorage.setItem('auly_html_favs', JSON.stringify(this.favorites));
+                },
+
+                openProductModal(product) {
+                    this.selectedProduct = product;
+                },
+
+                addCustomProductToCart() {
+                    let customProd = {
+                        id: Date.now(),
+                        name: 'Diseño Personalizado: ' + this.customChoice.roseColor,
+                        price: 75000,
+                        image: 'https://images.pexels.com/photos/7431423/pexels-photo-7431423.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+                        quantity: 1
+                    };
+                    this.cart.push(customProd);
+                    localStorage.setItem('auly_html_cart', JSON.stringify(this.cart));
+                    this.isCustomizerOpen = false;
+                    this.showToast('¡Regalo personalizado añadido al carrito!');
+                },
+
+                submitOrder() {
+                    if (!this.checkoutForm.name || !this.checkoutForm.phone) return;
+                    let newOrd = {
+                        orderNumber: 'AULY-' + Math.floor(100000 + Math.random() * 900000),
+                        total: this.cartTotal,
+                        status: 'Pendiente'
+                    };
+                    this.orders.unshift(newOrd);
+                    localStorage.setItem('auly_html_orders', JSON.stringify(this.orders));
+                    this.cart = [];
+                    localStorage.setItem('auly_html_cart', '[]');
+                    this.isCheckoutOpen = false;
+                    this.showToast('¡Pedido confirmado con éxito!');
+                    this.activeTab = 'perfil';
+                },
+
+                whatsappCheckoutUrl() {
+                    let text = "🛒 *NUEVO PEDIDO AULY REGALOS*\n\n";
+                    this.cart.forEach((i, idx) => {
+                        text += `${idx+1}. ${i.name} (x${i.quantity}) - ${this.formatPrice(i.price * i.quantity)}\n`;
+                    });
+                    text += `\n*TOTAL:* ${this.formatPrice(this.cartTotal)}`;
+                    return "https://wa.me/573000000000?text=" + encodeURIComponent(text);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
